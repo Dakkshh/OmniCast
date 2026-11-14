@@ -19,13 +19,14 @@ export default function App() {
   const [state, setState] = useState<State | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [aiReady, setAiReady] = useState<boolean | null>(null);
 
   async function send(type: string, patch?: Record<string, unknown>) {
     if (type !== 'GET_STATE') setBusy(true);
     try {
       const next = await browser.runtime.sendMessage({ type, patch }) as State;
       if (next?.error) setError(next.error);
-      else { setError(''); setState(next); }
+      else { if (type !== 'GET_STATE') setError(''); setState(next); }
     } catch (cause) { setError(String(cause)); }
     finally { if (type !== 'GET_STATE') setBusy(false); }
   }
@@ -39,6 +40,20 @@ export default function App() {
     };
     browser.storage.onChanged.addListener(changed);
     return () => { clearInterval(timer); browser.storage.onChanged.removeListener(changed); };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    async function checkAI() {
+      try {
+        const response = await fetch('http://127.0.0.1:8788/health', { signal: AbortSignal.timeout(2000) });
+        const health = response.ok ? await response.json() as { ready?: boolean } : {};
+        if (active) setAiReady(Boolean(health.ready));
+      } catch { if (active) setAiReady(false); }
+    }
+    void checkAI();
+    const timer = setInterval(() => { void checkAI(); }, 10_000);
+    return () => { active = false; clearInterval(timer); };
   }, []);
 
   if (!state) return <main className="shell"><p>Opening Study Buddy…</p>{error && <p role="alert">{error}</p>}</main>;
@@ -55,16 +70,18 @@ export default function App() {
   return <main className="shell">
     <header><span className="logo">▣</span><strong>study<span>buddy.</span></strong><small>{state.status === 'BREAK' ? 'BREAK' : active ? 'SESSION ON' : 'READY'}</small></header>
     {state.view === 'setup' && <div className="stack">
-      <h1>Set your study goal.</h1><p>Pick a page to return to when you drift.</p>
+      <h1>Set your study goal.</h1><p>Open your study page in Chrome. We’ll use it unless you pick another tab.</p>
       <label>Mission<input value={state.mission} maxLength={100} placeholder="Finish 3 calculus problems" onChange={event => patch({ mission: event.target.value })} /></label>
-      <label>Study tab<select value={state.studyTab ?? ''} onChange={event => patch({ studyTab: Number(event.target.value) })}>
-        <option value="">Choose an open tab</option>{state.tabs.map(tab => <option key={tab.id} value={tab.id}>{tab.title} · {tab.domain}</option>)}
+      <label>Study tab<select value={state.studyTab ?? ''} onChange={event => patch({ studyTab: event.target.value ? Number(event.target.value) : null })}>
+        <option value="">Use current Chrome tab</option>{state.tabs.map(tab => <option key={tab.id} value={tab.id}>{tab.title} · {tab.domain}</option>)}
       </select></label>
+      {state.tabs.length === 0 && <p role="status">Open a study webpage in Chrome, then return here.</p>}
       <div className="row"><label>Minutes<input type="number" min="1" max="240" value={state.duration} onChange={event => patch({ duration: Number(event.target.value) })} /></label><label>Tasks<input type="number" min="1" max="99" value={state.target ?? ''} placeholder="Optional" onChange={event => patch({ target: event.target.value })} /></label></div>
-      <details><summary>Site rules</summary><label>Study sites<input defaultValue={state.alwaysAllow.join(', ')} onBlur={event => patch({ alwaysAllow: domains(event.target.value) })} placeholder="khanacademy.org" /></label><label>Pause sites<input defaultValue={state.alwaysPause.join(', ')} onBlur={event => patch({ alwaysPause: domains(event.target.value) })} placeholder="reddit.com" /></label><p>Separate domains with commas.</p></details>
+      <details><summary>Site rules</summary><p>Common study sites are allowed; social and streaming sites pause by default.</p><label>Study sites<input defaultValue={state.alwaysAllow.join(', ')} onBlur={event => patch({ alwaysAllow: domains(event.target.value) })} placeholder="khanacademy.org" /></label><label>Pause sites<input defaultValue={state.alwaysPause.join(', ')} onBlur={event => patch({ alwaysPause: domains(event.target.value) })} placeholder="reddit.com" /></label><p>Separate domains with commas.</p></details>
       <label className="check"><input type="checkbox" checked={state.demoMode} onChange={event => patch({ demoMode: event.target.checked })} /> Demo mode · 5s pause</label>
       <label className="check"><input type="checkbox" checked={state.aiEnabled} onChange={event => patch({ aiEnabled: event.target.checked })} /> Check pages with AI (optional)</label>
-      <button className="primary" disabled={busy || !state.mission.trim() || !state.studyTab} onClick={() => void send('START_SESSION')}>Start studying →</button>
+      {state.aiEnabled && <p role="status">{aiReady === null ? 'Checking AI…' : aiReady ? 'AI ready' : 'AI unavailable · local site rules active'}</p>}
+      <button className="primary" disabled={busy || !state.mission.trim()} onClick={() => void send('START_SESSION')}>Start studying →</button>
     </div>}
 
     {active && <div className="stack">
