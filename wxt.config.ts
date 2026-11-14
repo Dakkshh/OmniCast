@@ -4,7 +4,9 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    permissions: ['storage'],
+    name: 'Study Buddy',
+    description: 'A study recovery coach for Chrome tabs.',
+    permissions: ['storage', 'tabs', 'alarms', 'scripting', 'notifications'],
     host_permissions: ['<all_urls>'],
   },
 });
