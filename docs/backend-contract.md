@@ -1,6 +1,6 @@
 # Study Buddy backend handoff
 
-This branch adds the session engine to the WXT extension on `extension-frontend`. The existing popup and corner widget remain the frontend team's code. They need to send the messages below to drive sessions; the legacy `SCREENSHOT` widget request is not the session API.
+This branch adds the session engine to the WXT extension on `extension-frontend`. The existing popup and corner widget remain the frontend team's code. They need to send the messages below to drive sessions; the legacy `SCREENSHOT` widget request remains handled by the original prototype and is not the session API.
 
 ## Frontend message contract
 
@@ -33,7 +33,7 @@ The pause content script is injected on HTTP(S) pages and handles the page-cover
 
 ## OpenAI proxy
 
-The API key stays in a local Node process, never in the extension bundle. Copy `.env.example` to `.env`, set `OPENAI_API_KEY`, and run `npm run server` on the demo machine. `http://127.0.0.1:8788/health` returns `ready: true` when a key is configured. Without the proxy or key, local classification rules remain active. Do not use `WXT_ANTHROPIC_API_KEY` or place any provider key in WXT build variables.
+The **new session backend** keeps its OpenAI key in a local Node process. Copy `.env.example` to `.env`, set `OPENAI_API_KEY`, and run `npm run server` on the demo machine. `http://127.0.0.1:8788/health` returns `ready: true` when a key is configured. Without the proxy or key, local classification rules remain active. The teammate's existing `SCREENSHOT` prototype still uses `WXT_ANTHROPIC_API_KEY` directly; remove or migrate that legacy path before distributing the extension with a real key. Never set that build variable in a shared or published build.
 
 ## Checks
 
