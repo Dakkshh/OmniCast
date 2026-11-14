@@ -1,44 +1,37 @@
 import { useEffect, useState } from 'react';
 
-export default function App() {
-  const [seconds, setSeconds] = useState(0);
-  const [minimized, setMinimized] = useState(false);
-  const [verdict, setVerdict] = useState<{ onTask: boolean; nudge: string } | null>(null);
-  const [loading, setLoading] = useState(false);
+type Session = { status: string; mission: string; studySeconds: number; pageDecision: string };
 
-  async function takeShot() {
-    const res = await browser.runtime.sendMessage({ type: 'SCREENSHOT', task: 'Study calculus' });
-    if (res.error) console.error(res.error);
-    else setVerdict(res.result);
-  }
+export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [minimized, setMinimized] = useState(false);
 
   useEffect(() => {
-    const timerId = setInterval(() => setSeconds((s) => s + 1), 1000);
-    const checkId = setInterval(() => takeShot(), 15000);
-    return () => {
-      clearInterval(timerId);
-      clearInterval(checkId);
+    let active = true;
+    async function refresh() {
+      try {
+        const next = await browser.runtime.sendMessage({ type: 'GET_WIDGET_STATE' }) as Session;
+        if (active) setSession(next);
+      } catch { if (active) setSession(null); }
     }
+    if (document.visibilityState === 'visible') void refresh();
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') void refresh(); }, 2000);
+    const visible = () => { if (document.visibilityState === 'visible') void refresh(); };
+    document.addEventListener('visibilitychange', visible);
+    return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', visible); };
   }, []);
 
-  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-  const ss = String(seconds % 60).padStart(2, '0');
+  if (!session || session.status === 'IDLE') return null;
+  const time = `${String(Math.floor(session.studySeconds / 60)).padStart(2, '0')}:${String(session.studySeconds % 60).padStart(2, '0')}`;
+  const label = session.status === 'BREAK' ? 'Break' : session.pageDecision === 'distracting' ? 'Ready to return?' : session.pageDecision === 'study' ? 'Study page' : 'Unknown page';
 
-  return (
-    <div className="pill">
-      {minimized ?
-        <>
-          <button className="pill small" onClick={() => setMinimized(false)}>🎯</button>
-        </> :
-        <>
-          <span className="dot" />
-          <span className="task">Read chapter 4</span>
-          <span className="timer">{mm}:{ss}</span>
-          <button onClick={() => setMinimized(true)}>–</button>
-          {/* <button onClick={takeShot}>📸</button> */}
-          {verdict && <span>{verdict.onTask ? '✅ on task' : `❌ ${verdict.nudge}`}</span>}
-        </>
-      }
-    </div>
-  );
+  return <div className="pill" role="status">
+    {minimized ? <button aria-label="Expand Study Buddy" onClick={() => setMinimized(false)}>▣</button> : <>
+      <span className="dot" />
+      <span className="task" title={session.mission}>{session.mission}</span>
+      <span className="timer">{time}</span>
+      <span>{label}</span>
+      <button aria-label="Minimize Study Buddy" onClick={() => setMinimized(true)}>–</button>
+    </>}
+  </div>;
 }

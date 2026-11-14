@@ -1,0 +1,311 @@
+
+.app {
+  min-height: 100vh;
+}
+
+.header {
+  padding: 24px;
+  text-align: center;
+  background: #231942;
+  color: white;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.header p {
+  color: #d6c8f5;
+}
+
+.dashboard {
+  width: 90%;
+  max-width: 800px;
+  margin: 30px auto;
+}
+
+.welcome {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.welcome h2 {
+  font-size: 30px;
+  color: #482f95;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+  margin-top: 0;
+  color: #482f95;
+}
+
+label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.duration-buttons,
+.timer-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.duration-buttons button {
+  background: #eee9f7;
+  color: #482f95;
+}
+
+.duration-buttons .selected,
+.primary-button {
+  background: #482f95;
+  color: white;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timer-card {
+  text-align: center;
+}
+
+.timer {
+  font-size: 76px;
+  font-weight: 800;
+  color: #231942;
+  margin: 25px 0;
+}
+
+.timer-status {
+  margin-bottom: 25px;
+}
+
+.timer-buttons {
+  justify-content: center;
+}
+
+.reset-button {
+  background: #eee;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.stat {
+  background: #f1edfa;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.stat h3 {
+  font-size: 32px;
+  margin: 0;
+  color: #482f95;
+}
+
+.stat p {
+  margin-bottom: 0;
+}
+
+footer {
+  text-align: center;
+  padding: 24px;
+  color: #777;
+}
+
+@media (max-width: 500px) {
+  .dashboard {
+    width: 94%;
+  }
+
+  .timer {
+    font-size: 55px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* AI Focus Monitoring */
+
+.monitoring-status {
+  background: #f1edfa;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.status-focused {
+  color: #16a34a;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status-distracted {
+  color: #dc2626;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status-inactive {
+  color: #777;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.monitoring-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.test-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0 25px;
+}
+
+.focused-button {
+  background: #16a34a;
+  color: white;
+}
+
+.distracted-button {
+  background: #dc2626;
+  color: white;
+}
+
+.focused-button:hover {
+  background: #15803d;
+}
+
+.distracted-button:hover {
+  background: #b91c1c;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+}
+
+.activity-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #f7f5fc;
+  border-radius: 8px;
+}
+
+@media (max-width: 500px) {
+  .monitoring-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .test-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+/* Study Session History */
+
+.session-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  background: #f7f5fc;
+  border-radius: 12px;
+  border: 1px solid #e7def8;
+}
+
+.session-item h3 {
+  margin: 0 0 8px;
+  color: #482f95;
+}
+
+.session-item p {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.session-item small {
+  color: #777;
+}
+
+.session-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.session-details strong {
+  color: #482f95;
+}
+
+.session-details span {
+  font-size: 13px;
+  color: #666;
+}
+
+@media (max-width: 500px) {
+  .session-item {
+    flex-direction: column;
+  }
+
+  .session-details {
+    text-align: left;
+  }
+}

@@ -8,6 +8,8 @@
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
+    "build:web": "npm --prefix web run build",
+    "lint:web": "npm --prefix web run lint",
     "test": "node --test lib/backend/*.test.js",
     "server": "node server/classify.mjs",
     "build:firefox": "wxt build -b firefox",

@@ -16,4 +16,5 @@
 .pill.small { padding: 8px 10px; border: none; cursor: pointer; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
 .timer { font-variant-numeric: tabular-nums; opacity: 0.8; }
+.task { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pill button { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; }
