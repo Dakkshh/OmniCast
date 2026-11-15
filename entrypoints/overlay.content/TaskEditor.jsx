@@ -5,7 +5,7 @@ function newTask() {
   return { id: crypto.randomUUID(), task: '', minutes: '' };
 }
 
-export default function TaskEditor({ tasks, setTasks, setSettingUp }) {
+export default function TaskEditor({ tasks, setTasks, setSettingUp, resetSession }) {
   // update one field ("task" or "minutes") of the task with this id
   function updateTask(id, field, value) {
     setTasks((prev) =>
@@ -25,12 +25,13 @@ export default function TaskEditor({ tasks, setTasks, setSettingUp }) {
     // clean up: drop empty rows, turn minutes into numbers
     const cleaned = tasks
       .filter((t) => t.task.trim() !== '')
-      .map((t) => ({ task: t.task.trim(), minutes: Number(t.minutes) || 0 }));
+      .map((t) => ({ ...t, task: t.task.trim() }));
 
     // console.log('tasks:', cleaned);
     // onDone?.(cleaned); // only runs if a parent passed onDone
     setTasks(cleaned);
     console.log('hi :3')
+    resetSession()
     setSettingUp(false);
   }
 

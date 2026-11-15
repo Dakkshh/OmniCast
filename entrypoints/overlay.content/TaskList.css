@@ -1,8 +1,8 @@
 .task-editor { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; }
-.task-item { display: flex; flex-direction: row; gap: 4px;}
+.list-row { display: flex; flex-direction: row; gap: 4px;}
 .task-fields { display: flex; flex-direction: row; gap: 4px; flex: 1; min-width: 0; }
-.list-task { padding: 4px; font-size: 20px; border-radius: 3px; background-color: #6d6a6a; flex: 4; width: 0; }
-.list-minutes { padding: 4px; font-size: 20px; align-self: center; border-radius: 3px; background-color: #6d6a6a; flex: 1; width: 0; }
+.list-task { padding: 4px; font-size: 20px; border-radius: 3px; background-color: #626262; flex: 1; width: 0; }
+.list-minutes { padding: 4px; font-size: 20px; align-self: center; border-radius: 3px; background-color: #626262; }
 .task-editor input {
   min-width: 0;
   box-sizing: border-box;
@@ -23,3 +23,6 @@
   background: #d70d0d; color: #fff; cursor: pointer;
   font: 14px system-ui, sans-serif;
 }
+.list-row.done .list-task,
+.list-row.done .list-minutes { text-decoration: line-through; opacity: 0.5; }
+.list-row.active .list-task { outline: 2px solid #d70d0d; }

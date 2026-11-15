@@ -34,8 +34,10 @@
 
 .pill.small { padding: 8px 10px; border: none; cursor: pointer; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #d70d0d; }
+.yellow-dot { width: 8px; height: 8px; border-radius: 50%; background: #d7d70d; }
 .live-text { display: flex; align-items: center;}
 .big-dot { margin-right: 4px; width: 12px; height: 12px; border-radius: 50%; background: #d70d0d; }
+.big-yellow-dot { margin-right: 4px; width: 12px; height: 12px; border-radius: 50%; background: #d7d70d; }
 .live { padding: 0px; margin: 0px; font-size: 20px }
 .task { padding-left: 4px; }
 .current-tasks { margin-top: 12px; }
