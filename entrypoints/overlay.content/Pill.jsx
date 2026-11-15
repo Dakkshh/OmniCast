@@ -20,6 +20,8 @@ export default function Pill() {
   const [paused, setPaused] = useStoredState('paused', false);
   const [endsAt, setEndsAt] = useStoredState('endsAt', 0);          // timestamp when current task ends
   const [pausedLeft, setPausedLeft] = useStoredState('pausedLeft', 0); // ms left when paused
+  const [focuses, setFocuses] = useStoredState('focuses', 0);
+  const [distracts, setDistracts] = useStoredState('distracts', 0);
 
   // local clock: re-render every second
   const [now, setNow] = useState(Date.now());
@@ -47,6 +49,8 @@ export default function Pill() {
     setPaused(false);
     setCurrentIndex(0);
     setEndsAt(Date.now() + Number(tasks[0].minutes) * 60000);
+    setFocuses(0);
+    setDistracts(0);
   }
 
   function togglePause() {
@@ -69,7 +73,14 @@ export default function Pill() {
   async function takeShot() {
     const res = await browser.runtime.sendMessage({ type: 'SCREENSHOT', task: currentTask });
     if (res?.error) console.error(res.error);
-    else setVerdict(res?.result ?? null);
+    else {
+      const result = res?.result ?? null;
+      setVerdict(result);
+      if (result?.onTask) setFocuses((f) => f + 1);
+      else if (result) setDistracts((d) => d + 1);
+      console.log(focuses);
+      console.log(distracts);
+    }
   }
 
   // when the current task's time runs out → next task, or finish
@@ -107,8 +118,16 @@ export default function Pill() {
             {running ? <><div className="big-dot" /><span className="live">LIVE</span></> : <><div className="big-yellow-dot" /><span className="live">STOPPED</span></>}
           </div>
           <div className="big-timer">{mm}:{ss}</div>
-          {verdict && (
+          {(verdict && !finished) && (
             <span className="verdict">{verdict.onTask ? "✅ You're on task! Keep it up!" : `❌ ${verdict.nudge}`}</span>
+          )}
+          {finished && (
+            <div className="session-stats">
+              <div>Session complete 🎉</div>
+              <div>✅ Focused checks: {focuses}</div>
+              <div>❌ Distracted checks: {distracts}</div>
+              <div>Focus score: {(focuses / (focuses + distracts) * 100).toFixed(2)}</div>
+            </div>
           )}
           <div className="current-tasks">Current tasks</div>
           {settingUp

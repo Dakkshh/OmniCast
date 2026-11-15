@@ -30,7 +30,6 @@ export default function TaskEditor({ tasks, setTasks, setSettingUp, resetSession
     // console.log('tasks:', cleaned);
     // onDone?.(cleaned); // only runs if a parent passed onDone
     setTasks(cleaned);
-    console.log('hi :3')
     resetSession()
     setSettingUp(false);
   }
