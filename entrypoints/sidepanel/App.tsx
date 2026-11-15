@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type Tab = { id: number; title: string; domain: string; url: string };
 type State = {
@@ -20,15 +20,48 @@ export default function App() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [aiReady, setAiReady] = useState<boolean | null>(null);
+  const version = useRef(0);
+  const pending = useRef(0);
+  const actionPending = useRef(false);
+  const reading = useRef(false);
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
 
-  async function send(type: string, patch?: Record<string, unknown>) {
-    if (type !== 'GET_STATE') setBusy(true);
+  async function refresh() {
+    if (reading.current || pending.current) return;
+    reading.current = true;
+    const startedAt = version.current;
     try {
-      const next = await browser.runtime.sendMessage({ type, patch }) as State;
-      if (next?.error) setError(next.error);
-      else { if (type !== 'GET_STATE') setError(''); setState(next); }
-    } catch (cause) { setError(String(cause)); }
-    finally { if (type !== 'GET_STATE') setBusy(false); }
+      const next = await browser.runtime.sendMessage({ type: 'GET_STATE' }) as State;
+      if (startedAt === version.current && !pending.current) {
+        if (!next) setError('Study Buddy is not responding. Reload the extension.');
+        else if (next.error) setError(next.error);
+        else setState(next);
+      }
+    } catch (cause) { if (startedAt === version.current && !pending.current) setError(String(cause)); }
+    finally { reading.current = false; }
+  }
+
+  function send(type: string, patch?: Record<string, unknown>) {
+    if (type === 'GET_STATE') return refresh();
+    if (actionPending.current) return queue.current;
+    version.current++;
+    pending.current++;
+    if (type !== 'UPDATE_SETUP') { actionPending.current = true; setBusy(true); }
+    const task = async () => {
+      try {
+        const next = await browser.runtime.sendMessage({ type, patch }) as State;
+        if (!next) setError('Study Buddy is not responding. Reload the extension.');
+        else if (next.error) setError(next.error);
+        else if (pending.current === 1) { setError(''); setState(next); }
+      } catch (cause) { setError(String(cause)); }
+      finally {
+        pending.current--;
+        if (type !== 'UPDATE_SETUP') { actionPending.current = false; setBusy(false); }
+        if (!pending.current) void refresh();
+      }
+    };
+    queue.current = queue.current.then(task, task);
+    return queue.current;
   }
 
   useEffect(() => {
@@ -36,7 +69,7 @@ export default function App() {
     const timer = setInterval(() => { void send('GET_STATE'); }, 1000);
     const changed = (changes: Record<string, { newValue?: unknown }>) => {
       const value = changes.studyBuddyState?.newValue as Partial<State> | undefined;
-      if (value) setState(current => ({ ...current, ...value } as State));
+      if (value && !pending.current) setState(current => ({ ...current, ...value } as State));
     };
     browser.storage.onChanged.addListener(changed);
     return () => { clearInterval(timer); browser.storage.onChanged.removeListener(changed); };
@@ -60,7 +93,7 @@ export default function App() {
   const active = state.view === 'active';
   const distracting = state.pageDecision === 'distracting';
   const checkpointLeft = Math.max(0, (state.demoMode ? 10 : 120) - state.recoverySeconds);
-  const graceAt = Math.max(state.graceDeadline || 0, (state.lastNudgeAt || 0) + (state.demoMode ? 10_000 : 120_000));
+  const graceAt = state.graceDeadline || 0;
   const graceLeft = Math.max(0, Math.ceil((graceAt - Date.now()) / 1000));
   const patch = (value: Record<string, unknown>) => {
     setState(current => current ? { ...current, ...value } as State : current);
