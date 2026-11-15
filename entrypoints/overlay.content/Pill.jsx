@@ -68,9 +68,12 @@ export default function Pill() {
     setCurrentIndex(-1);
     setFinished(false);
     setPaused(false);
+    setVerdict(null);
   }
 
   async function takeShot() {
+    if (document.visibilityState !== 'visible') return;   // 👈 background tabs never advance
+    if (!running || secondsLeft > 0) return;
     const res = await browser.runtime.sendMessage({ type: 'SCREENSHOT', task: currentTask });
     if (res?.error) console.error(res.error);
     else {
