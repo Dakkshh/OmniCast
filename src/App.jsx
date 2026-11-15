@@ -68,6 +68,7 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const deadlineRef = useRef(null);
   const cameraRef = useRef(null);
+  const lastFocusEventIdRef = useRef(null);
   const extensionEnabledRef = useRef(false);
   const [cameraStarting, setCameraStarting] = useState(false);
   const [cameraWarning, setCameraWarning] = useState("");
@@ -263,6 +264,57 @@ async function toggleTimer() {
       ...previous,
     ]);
   }
+
+useEffect(() => {
+  function handleFocusResult(event) {
+    if (
+      event.source !== window ||
+      event.origin !== window.location.origin
+    ) {
+      return;
+    }
+
+    const message = event.data;
+
+    if (
+      message?.source !== "study-buddy-extension" ||
+      message?.type !== "FOCUS_RESULT"
+    ) {
+      return;
+    }
+
+    // Count results only during an active monitored session.
+    if (!isRunning || !extensionEnabledRef.current) return;
+
+    const result = message.result;
+
+    if (
+      typeof result?.id !== "string" ||
+      typeof result?.focused !== "boolean" ||
+      lastFocusEventIdRef.current === result.id
+    ) {
+      return;
+    }
+
+    lastFocusEventIdRef.current = result.id;
+
+    const status = result.focused
+      ? "Focused"
+      : "Distracted";
+
+    // Update the website's existing focus statistics.
+    recordCheck(status);
+
+    console.log("AI Focus Check:", status);
+  }
+
+  window.addEventListener("message", handleFocusResult);
+
+  return () => {
+    window.removeEventListener("message", handleFocusResult);
+  };
+}, [isRunning]);
+
 
   function changePage(nextPage) {
     setPage(nextPage);
