@@ -30,7 +30,7 @@ export async function askClaude(dataUrl: string, task: string): Promise<Verdict>
                     This is a screenshot of their browser. Is what they're viewing relevant to that task?
                     Ignore the small focus widget in the corner.
                     Reply with ONLY this JSON and nothing else:
-                    {"onTask": true or false, "nudge": "one short friendly sentence if off-task, otherwise empty string"}`,
+                    {"onTask": true or false, "nudge": "one short friendly sentence if off-task, otherwise empty string. Focus only on the action the user should take. Refer to the task as their task."}`,
             },
           ],
         },
@@ -42,7 +42,6 @@ export async function askClaude(dataUrl: string, task: string): Promise<Verdict>
 
   const data = await res.json();
   const text: string = data.content?.find((b: any) => b.type === 'text')?.text ?? '';
-  console.log('Claude said:', text); // shows in the SERVICE WORKER console
 
   const match = text.match(/\{[\s\S]*\}/); // grab just the {...} part
   if (!match) throw new Error('Claude did not return JSON: ' + text);
